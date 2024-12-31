@@ -1,4 +1,4 @@
-const cytoscape = window.cytoscape;
+console.log('Hello World!');
 cytoscape({
     container: document.getElementById('cy'),
   
@@ -41,7 +41,9 @@ cytoscape({
             selector: 'node',
             style: {
                 shape: 'hexagon',
-                'background-color': 'red'
+                'background-color': 'red',
+                'curve-style': 'taxi',
+                'target-arrow-shape': 'triangle'
             }
         }] 
   
