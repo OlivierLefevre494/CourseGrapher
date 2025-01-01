@@ -13,6 +13,7 @@
     "cytoscape": "^3.30.4",
     "express": "^4.21.2",
     "http": "^0.0.1-security",
+    "puppeteer": "^23.11.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   }
