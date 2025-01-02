@@ -3,6 +3,7 @@ const { readFile, readFileSync } = require('fs');
 const express = require('express');
 const puppeteer = require('puppeteer');
 const app = express();
+let dagre = require('cytoscape-dagre');
 
 // Serve static files from the current directory (or a public folder)
 app.use(express.json()); // Parse JSON from the request body
@@ -52,16 +53,45 @@ app.post('/scrape', async (req, res) => {
 
     // loop that takes each link and scrapes that pages for the edges
     for (let i = 0; i < links.length; i++) {
+      ///
+      /// NEEDS WORK, IMPLEMENT CHECKING FOR OR AND ADD LOGIC EG PREREQS : CS 111 OR CS 112
+      /// IMPLEMENT CHECKING FOR RESTRICTIONS EG NOT AVAILABLE TO PEOPLE WHO HAVE TAKEN CS 111
+      /// IMPLEMENT CHECKING AVAILABLE SEMESTERS EG OFFERED IN FALL 2024
+      ///
       await page.goto(links[i]);
-      // for each page all the prereqs are stored in links <a> tags inside the ul with class 'catalog_notes'
-      const prereqs = await page.$$eval('catalog-notes ul li p a', links => links.map(a => a.textContent));
-      const banana = await page.$$eval('p a', links => links.map(a => a.textContent));
-      console.log(prereqs);
-      console.log(banana);
-      // for each prereq add a new edge to the result object with source title corresponding to the current number of link we are on ex if on link 3 and class 3 is 'CS 111' then the source is 'CS 111'
-      //for (let j = 0; j < prereqs.length; j++) {
-        //result.edges.push({source: title[i], target: prereqs[j]});
-      //}
+      // for each page all the prereqs are stored in links <a> tags inside the ul with class 'catalog_notes',
+      const prereqs = await page.$$eval('p', paragraphs => paragraphs.map(p => p.innerHTML));
+      // keep those that contain 'Prerequisite' and remove the rest
+      for (let j = 0; j < prereqs.length; j++) {
+        if (!prereqs[j].includes('Prerequisite')) {
+          prereqs.splice(j, 1);
+          j--;
+        }
+      }
+      // for each prereqtext get all substrings that are between a '>' and a '<' and store them in the prereqs array there will be multiple prereqs for each string
+      for (let j = 0; j < prereqs.length; j++) {
+        let prereq = prereqs[j];
+        let newprereqs = [];
+        while (prereq.includes('<')) {
+          let start = prereq.indexOf('>');
+          let end = prereq.indexOf('<');
+          // make sure the > is before the < and then add the substring between them to the newprereqs array
+          if (start < end && prereq[end+1]!="a") {
+            newprereqs.push(prereq.substring(start+1, end));
+          }
+          // remove the substring from the prereq string
+          prereq = prereq.substring(end+1);
+        }
+        prereqs[j] = newprereqs;
+      }
+      
+      // for each prereqarray in prereqs for each prereq in the prereqarray add an edge to the result object
+      for (let j = 0; j < prereqs.length; j++) {
+        for (let k = 0; k < prereqs[j].length; k++) {
+          result.edges.push({source: prereqs[j][k], target: title[i]});
+        }
+      }
+
     }
 
     await browser.close();

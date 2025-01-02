@@ -1,3 +1,36 @@
+cytoscape.use(cytoscapeDagre);
+
+
+var cy = cytoscape({
+  container: document.getElementById('cy'),
+
+  style: [
+      {
+          selector: 'node',
+          style: {
+              shape: 'hexagon',
+              'background-color': 'red'
+          }
+      },
+      {
+        selector: 'edge',
+        style: {
+            'curve-style': 'round-taxi',
+            'target-arrow-shape': 'triangle'
+        }
+    },
+    {
+      selector: 'node[label]',
+      style: {
+        'label': 'data(label)',
+        'text-halign': 'center',
+        'text-valign': 'center'
+      }
+    }
+  ] 
+
+});
+
 
 let timeboxsem = document.getElementById('timeboxsem');
 let timeboxyear = document.getElementById('timeboxyear');
@@ -34,11 +67,41 @@ document.getElementById('scrapeButton').addEventListener('click', async () => {
       throw new Error('Failed to scrape the website');
     }
 
-    const data = await response.json();
-    console.log(data)
+    let data = await response.json();
+    console.log(data);
+    
+    // Display graph
+    // Loop through nodes and add them to the graph
+    for (const node of data.result.classes) {
+      cy.add({
+        group: 'nodes',
+        data: { id: node.title, label: node.title, description: node.description },
+      });
+    }
+    // Loop through edges and add them to the graph
+    for (const edge of data.result.edges) {
+      // if source node doesn't exist in the graph, add it
+      if (cy.getElementById(edge.source).length===0) {
+        cy.add({
+          group: 'nodes',
+          data: { id: edge.source, label: edge.source },
+        });
+      }
+      cy.add({
+        group: 'edges',
+        data: { id: `${edge.source}to${edge.target}`, source: edge.source, target: edge.target },
+      });
+    }
+    // Layout the graph using defaults options name of layout is dagre
+    cy.layout({
+      name: 'dagre',
+      rankDir: 'LR', // Left-to-right layout
+      rankSep: 150,  // Increase vertical spacing
+      nodeSep: 100   // Increase horizontal spacing
+  }).run();
+
   } catch (err) {
     console.error(err);
-    document.getElementById('result').textContent = 'An error occurred while scraping.';
   }
 });
 
@@ -71,43 +134,4 @@ function updateTimeBackward(time) {
   }
 }
 
-
-var cy = cytoscape({
-    container: document.getElementById('cy'),
-
-    style: [
-        {
-            selector: 'node',
-            style: {
-                shape: 'hexagon',
-                'background-color': 'red'
-            }
-        },
-        {
-          selector: 'edge',
-          style: {
-              'curve-style': 'round-taxi',
-              'target-arrow-shape': 'triangle'
-          }
-      }] 
   
-  });
-
-
-
-  
-  cy.add({
-    group: 'nodes',
-    data: { id:'M242', label: 'MATH242', description: 'Analysis 1 is whatever poopy haha' },
-});
-  
-cy.add({
-  group: 'nodes',
-  data: { id:'M133', label: 'MATH133', description: 'Linear Algebra' },
-});
-
-cy.add({
-  group: 'edges',
-  data: { id:'M133toM242', source: 'M133', target: 'M242' }
-});
-
