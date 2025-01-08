@@ -45,10 +45,15 @@ app.post('/scrape', async (req, res) => {
     const links = await page.$$eval('.course_title a', links => links.map(a => a.href));
     //get all descriptions of the class
     const descriptions = await page.$$eval('.course_title a', links => links.map(a => a.title));
-
+    // get only numbers from title and send to weight array
+    const weight = [];
+    for (let i = 0; i < title.length; i++) {
+      let num = title[i].match(/\d+/g);
+      weight.push(num[0]);
+    }
     // combine all titles with descriptions and add them to the result object
     for (let i = 0; i < title.length; i++) {
-      result.classes.push({title: title[i], description: descriptions[i]});
+      result.classes.push({title: title[i], description: descriptions[i], weight: weight[i], prereqs: []});
     }
 
     // loop that takes each link and scrapes that pages for the edges
@@ -89,6 +94,8 @@ app.post('/scrape', async (req, res) => {
       for (let j = 0; j < prereqs.length; j++) {
         for (let k = 0; k < prereqs[j].length; k++) {
           result.edges.push({source: prereqs[j][k], target: title[i]});
+          // add the prereq to the prereqs array of the class
+          result.classes[i].prereqs.push(prereqs[j][k]);
         }
       }
 

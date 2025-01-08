@@ -35,5 +35,6 @@ body {
 }
 
 #cy {
-    background-color: antiquewhite;
+    background-image: radial-gradient(rgb(60, 60, 60) 10%, rgb(60, 60, 60) 10%, black 150%);
 }
+/*https://www.mcgill.ca/mathstat/undergraduate/programs/b-sc/major-mathematics-and-computer-science-b-sc

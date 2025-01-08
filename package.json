@@ -12,6 +12,8 @@
   "dependencies": {
     "cytoscape": "^3.30.4",
     "cytoscape-dagre": "^2.5.0",
+    "cytoscape-elk": "^2.3.0",
+    "elkjs": "^0.9.3",
     "express": "^4.21.2",
     "http": "^0.0.1-security",
     "puppeteer": "^23.11.1",
